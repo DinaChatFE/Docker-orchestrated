@@ -1,0 +1,49 @@
+version: "3.4"
+services:
+  backend:
+    volumes:
+      - ./:/app
+      # !noted this app/vendor is from docker install file
+      # ! when mounted to local volumn it whould override all the docker file to our volume, so if
+      # ! we want to add some required file or folder it to add it as another list,ex: we need vendor to load php autoload
+      - /app/vendor
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: backend
+    depends_on:
+      - db
+    networks:
+      - center-network
+    ports:
+      - 8000:8000
+    environment:
+      DB_HOST: db
+      DB_DATABASE: ${DB_DATABASE}
+      DB_ROOT_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USERNAME: ${DB_USERNAME}
+
+  db:
+    container_name: mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - my-db:/var/lib/mysql
+    networks:
+      - center-network
+
+networks:
+  center-network:
+    driver: bridge
+volumes:
+  my-db:
